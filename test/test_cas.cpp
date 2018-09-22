@@ -120,8 +120,10 @@ TEST(CASTest, rulefile_test)
 {
   state_num_t cells[7] = {EXTERNAL, GENERAL, SOLDIER, SOLDIER, SOLDIER, SOLDIER, EXTERNAL};
   int i, j;
+  file_property file_property;
 
-  ASSERT_EQ(SUCCESS, load_rulefile("mazoyer.rul"));
+
+  ASSERT_EQ(SUCCESS, load_rulefile("mazoyer.rul", &file_property));
 
   for (i = 0; i < 9; i++) {
     switch (i) {
@@ -136,6 +138,9 @@ TEST(CASTest, rulefile_test)
       break;
     }
   }
+
+  EXPECT_EQ(7, file_property.state_num);
+  EXPECT_EQ(120, file_property.rule_num);
 
   free_ruleset();
   free_states();

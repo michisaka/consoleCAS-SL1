@@ -21,6 +21,11 @@ typedef struct state {
   state_num_t index;
 } state;
 
+typedef struct file_property {
+  char path[256];
+  state_num_t state_num;
+  size_t rule_num;
+} file_property;
 
 /* return code */
 #define SUCCESS     1
@@ -55,6 +60,8 @@ state* get_state_byindex(state_num_t index);
 void free_states(void);
 
 /* rule */
+extern const unsigned int RULECAP;
+
 int allocate_ruleset(size_t param);
 int register_rule(const char *left, const char *center, const char *right, const char *next);
 state_num_t get_next_state(state_num_t l_index, state_num_t c_index, state_num_t r_index);
@@ -64,7 +71,5 @@ void free_ruleset(void);
 int change_state(state_num_t *cells, size_t size);
 
 /* rulefile */
-extern const unsigned int RULECAP;
-
-int load_rulefile(const char *path);
+int load_rulefile(const char *path, file_property *property);
 #endif /* CASSL1_H_INCLUDED */

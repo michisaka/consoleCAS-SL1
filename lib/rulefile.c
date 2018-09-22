@@ -3,12 +3,12 @@
 
 #include "cassl1.h"
 
-static int load_formate_id(FILE *fp);
-static int load_states(FILE *fp);
-static int load_generals(FILE *fp);
-static int load_rules(FILE *fp);
+static int load_formate_id(FILE *fp, file_property *property);
+static int load_states(FILE *fp, file_property *property);
+static int load_generals(FILE *fp, file_property *property);
+static int load_rules(FILE *fp, file_property *property);
 
-int load_rulefile(const char *path) {
+int load_rulefile(const char *path, file_property *property) {
   FILE *fp;
   int ret;
 
@@ -16,10 +16,10 @@ int load_rulefile(const char *path) {
     return ERR_FILE_IO_ERROR;
   }
 
-  if ((ret = load_formate_id(fp)) != SUCCESS) goto fail;
-  if ((ret = load_states(fp))     != SUCCESS) goto fail;
-  if ((ret = load_generals(fp))   != SUCCESS) goto fail;
-  if ((ret = load_rules(fp))      != SUCCESS) goto fail;
+  if ((ret = load_formate_id(fp, property)) != SUCCESS) goto fail;
+  if ((ret = load_states(fp, property))     != SUCCESS) goto fail;
+  if ((ret = load_generals(fp, property))   != SUCCESS) goto fail;
+  if ((ret = load_rules(fp, property))      != SUCCESS) goto fail;
 
   fclose(fp);
   return SUCCESS;
@@ -31,7 +31,7 @@ int load_rulefile(const char *path) {
   return ret;
 }
 
-static int load_formate_id(FILE *fp)
+static int load_formate_id(FILE *fp, file_property *property)
 {
   char buf[256];
   char rule_id[8];
@@ -44,10 +44,11 @@ static int load_formate_id(FILE *fp)
     printf("%s format.\n", rule_id);
     return SUCCESS;
   }
+
   return ERR_UNKNOWN_FORMAT;
 }
 
-static int load_states(FILE *fp)
+static int load_states(FILE *fp, file_property *property)
 {
   char buf[256];
   int i;
@@ -66,6 +67,9 @@ static int load_states(FILE *fp)
   }
 
   printf("%d states: ", num);
+  if (property) {
+    property->state_num = num;
+  }
 
   if ((ret = allocate_states(num)) != SUCCESS) {
     return ret;
@@ -121,7 +125,7 @@ static int load_states(FILE *fp)
   return SUCCESS;
 }
 
-static int load_generals(FILE *fp)
+static int load_generals(FILE *fp, file_property *property)
 {
   char buf[256];
   int i;
@@ -159,7 +163,7 @@ static int load_generals(FILE *fp)
   return SUCCESS;
 }
 
-static int load_rules(FILE *fp)
+static int load_rules(FILE *fp, file_property *property)
 {
   char buf[256];
   int i;
@@ -177,6 +181,9 @@ static int load_rules(FILE *fp)
   }
 
   printf("%d rules: ", num);
+  if (property) {
+    property->rule_num = num;
+  }
 
   if (!(RULECAP & RULECAP_ALLOCATE_BY_STATENUM)) {
     if ((ret = allocate_ruleset(num)) != SUCCESS) {

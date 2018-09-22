@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "cassl1.h"
 #include "version.h"
@@ -18,6 +19,7 @@ int main(int argc, char **argv)
   unsigned int cell_size = 10;
   state_num_t *cell_array;
   unsigned int interval = 100;
+  file_property file_prop;
 
   progname = argv[0];
 
@@ -54,10 +56,14 @@ int main(int argc, char **argv)
   printf("  Copyright (c) 2018 Koshi.Michisaka\n\n");
 
   printf("Load %s\n", argv[0]);
-  if ((ret =load_rulefile(argv[0])) != SUCCESS) {
+  if ((ret =load_rulefile(argv[0], &file_prop)) != SUCCESS) {
     printf("Fail to load %s. return by %d\n", argv[0], ret);
     return EXIT_FAILURE;
   }
+
+  strcpy(file_prop.path, basename(argv[0]));
+
+  printf("file: %s, states: %d, rules: %ld\n", file_prop.path, file_prop.state_num, file_prop.rule_num);
 
   cell_size += 2;
 
