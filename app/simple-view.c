@@ -51,8 +51,7 @@ int start_simple_view(const option *option)
     }
   }
 
-  free_states();
-  free_ruleset();
+  free(cell_array);
   return SUCCESS;
 }
 
