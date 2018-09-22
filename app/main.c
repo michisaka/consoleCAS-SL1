@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "cassl1.h"
+#include "version.h"
 
 static void usage(char *progname);
 static int print_array(const state_num_t *cell_array, const int cell_size);
@@ -20,7 +21,7 @@ int main(int argc, char **argv)
 
   progname = argv[0];
 
-  while ((ch = getopt(argc, argv, "c:i:")) != -1) {
+  while ((ch = getopt(argc, argv, "hc:i:")) != -1) {
     switch (ch) {
     case 'c':
       cell_size = strtol(optarg, NULL, 0);
@@ -29,6 +30,7 @@ int main(int argc, char **argv)
       interval = strtol(optarg, NULL, 0);
       break;
     case '?':
+    case 'h':
     default:
       usage(progname);
       return EXIT_FAILURE;
@@ -46,6 +48,10 @@ int main(int argc, char **argv)
     printf("cell_size %d is too short.\n", cell_size);
     return EXIT_FAILURE;
   }
+
+  printf("consoleCAS-SL1 version %d.%02d (%s-%s)\n",
+	 VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
+  printf("  Copyright (c) 2018 Koshi.Michisaka\n\n");
 
   printf("Load %s\n", argv[0]);
   if ((ret =load_rulefile(argv[0])) != SUCCESS) {
@@ -90,9 +96,13 @@ int main(int argc, char **argv)
 
 static void usage(char *progname)
 {
-  fprintf(stderr, "usage: %s [-i ms -c num] rulefile\n", basename(progname));
+  fprintf(stderr, "consoleCAS-SL1 version %d.%02d (%s-%s)\n\n",
+	  VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE
+ );
+  fprintf(stderr, "usage: %s [-h] [-i ms] [-c num] rulefile\n", basename(progname));
+  fprintf(stderr, "    -h      show this message\n");
   fprintf(stderr, "    -c num  cell size\n");
-  fprintf(stderr, "    -i ms   step interval\n");
+  fprintf(stderr, "    -i ms   step interval\n\n");
 }
 
 static int print_array(const state_num_t *cell_array, const int cell_size)

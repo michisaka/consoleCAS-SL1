@@ -1,8 +1,23 @@
 cmake_minimum_required(VERSION 3.11)
 project (consoleCAS-SL1)
 
+execute_process (COMMAND date +%Y%m%d OUTPUT_VARIABLE CMAKE_BUILD_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process (COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE CMAKE_REVISION OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set (VERSION_MAJOR 1)
+set (VERSION_MINOR 0)
+set (BUILD_DATE ${CMAKE_BUILD_DATE})
+set (REVISION ${CMAKE_REVISION})
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/version.h.in"
+  "${PROJECT_SOURCE_DIR}/version.h"
+)
+
+include_directories(${PROJECT_SOURCE_DIR})
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/app/waksman.rul"
