@@ -64,9 +64,12 @@ int main(int argc, char **argv)
   option.max_cell_size = max_cell_size;
   option.interval = interval;
 
-  switch (1) {
+  switch (2) {
   case 1:
     ret = start_simple_view(&option);
+    break;
+  case 2:
+    ret = start_curses_view(&option);
     break;
   }
 

@@ -1,7 +1,6 @@
 #if !defined(APPLICATION_H_INCLUDED)
 #define APPLICATION_H_INCLUDED
 
-#include <stdio.h>
 #include "cassl1.h"
 
 typedef struct option {
@@ -13,6 +12,7 @@ typedef struct option {
 } option;
 
 int start_simple_view(const option *option);
+int start_curses_view(const option *option);
 
 
 #endif /* APPLICATION_H_INCLUDED */
