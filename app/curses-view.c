@@ -7,149 +7,122 @@
 #include "curses-view.h"
 #include "version.h"
 
-static int setup_color(state_num_t state_num);
-static short find_color_index(unsigned char color[]);
-static short find_color_pair(short fg, short bg);
-static int put_cell(state_num_t state_index);
-
-static short *state_color;
-static short last_color_pair = 16;
+static state_num_t* allocate_cell_array(size_t cell_size);
 
 int start_curses_view(const option *option)
 {
-  int i;
+  int ret;
+  int step;
+  int cell_size;
+  state_num_t *cell_array;
   short key_input;
-  WINDOW *cell_wnd;
+
+  slk_init(1);
 
   if (initscr() == NULL) {
     return 0;
   }
-  setup_color(option->file_property.state_num);
+  setup_cell_color(option->file_property.state_num);
 
+  curs_set(0);
   noecho();
   cbreak();
   timeout(0);
+  keypad(stdscr, TRUE);
+
+  slk_set(8, "EXIT", 0);
+  slk_refresh();
 
   if (create_status_window() == ERR) {
     return 0;
   }
   draw_status_window(option);
 
-  cell_wnd = subwin(stdscr, 10, 20, 5, 0);
-  box(cell_wnd, 0, 0);
-  scrollok(cell_wnd, TRUE);
-  idlok(cell_wnd, TRUE);
-  mvwprintw(cell_wnd, 0, 2, " DEBUG ");
-
-  refresh();
-
-  for (i = 0; i < 20; i++) {
-    mvwprintw(cell_wnd, 4, 1, "%2d (%d,%d)", i, COLS, LINES);
-    update_step_count(i);
-    add_sync_count(i * 2);
-
-    key_input = wgetch(stdscr);
-    if (key_input == KEY_RESIZE) {
-      mvwprintw(cell_wnd, 5, 1, "RESIZED    ");
-      resize_status_window();
-      draw_status_window(option);
-
-    } else {
-      mvwprintw(cell_wnd, 5, 1, "NOT RESIZED");
+  cell_array = NULL;
+  for (cell_size = 2; cell_size < option->max_cell_size; cell_size++) {
+    if (cell_array != NULL) {
+      free(cell_array);
     }
-    wrefresh(cell_wnd);
-    doupdate();
-    usleep(1000*1000);
+    if ((cell_array = allocate_cell_array(cell_size)) == NULL) {
+      return ERR_OUT_OF_MEMORY;
+    }
+
+    update_cell_count(cell_size);
+    create_cell_window(cell_size);
+    refresh();
+
+    ret = SUCCESS;
+    for (step = 0; step <= 3 * cell_size; step++) {
+      update_step_count(step);
+      update_cell_window(step, cell_array, cell_size);
+      draw_cell_window(0, 0);
+      doupdate();
+
+      if (ret == SYNCHRONIZE) {
+      	add_sync_count(1);
+	usleep(option->interval * 1000);
+      	break;
+      }
+      if (ret == ERR_NOT_SYNCHRONIZE) {
+      	add_not_sync_count(1);
+	usleep(option->interval * 1000);
+      	break;
+      }
+      if (ret == ERR_UNDEFINED_RULE) {
+      	add_undefined_count(1);
+	usleep(option->interval * 1000);
+      	break;
+      }
+
+      key_input = wgetch(stdscr);
+      switch (key_input) {
+      case KEY_RESIZE:
+	resize_status_window();
+	draw_status_window(option);
+	draw_cell_window(0, 0);
+	break;
+      case KEY_F(8):
+	goto end;
+      }
+
+      ret = change_state(cell_array, cell_size + 2);
+      usleep(option->interval * 1000);
+
+    }
   }
 
-  mvwprintw(cell_wnd, 7, 3, "END");
-  refresh();
-
+ end: /* シグナル処理の時にまとめる */
   free_status_window();
-  free(state_color);
+  free_cell_window();
+  free_state_color();
+  free(cell_array);
   endwin();
 
   return SUCCESS;
 }
 
-static int setup_color(state_num_t state_num)
+static state_num_t* allocate_cell_array(size_t cell_size)
 {
   int i;
-  short fg, bg;
-  state *state;
+  state_num_t *cell_array;
 
-  start_color();
-  last_color_pair = 16;
-  if ((state_color = (short*)calloc(sizeof(short), state_num)) == NULL) {
-    return ERR_OUT_OF_MEMORY;
-  }
-  for (i = 0; i < state_num; i++) {
-    state = get_state_byindex(i);
-    fg = find_color_index(state->fg_rgb_color);
-    bg = find_color_index(state->bg_rgb_color);
-    state_color[i] = find_color_pair(fg, bg);
-  }
-  return SUCCESS;
-}
-
-static short find_color_index(unsigned char *color)
-{
-  short i;
-  short r, g, b;
-
-  short index;
-  short delta, delta_tmp;
-
-  index = COLORS;
-  delta = 1000 * 3;
-
-  for (i = COLORS - 1 ; i >= 0; i--) {
-    color_content(i, &r, &g, &b);
-    delta_tmp  = abs(r - (int)(color[0] * 1000.0 / 255.0));
-    delta_tmp += abs(g - (int)(color[1] * 1000.0 / 255.0));
-    delta_tmp += abs(b - (int)(color[2] * 1000.0 / 255.0));
-    if (delta_tmp <= delta) {
-      delta = delta_tmp;
-      index = i;
-    }
-  }
-  return index;
-}
-
-static short find_color_pair(short state_fg, short state_bg)
-{
-  int i, j;
-  short fg, bg;
-
-  /*  if (has_colors() && can_change_color()) {  */
-
-  for (i = 0; i < COLOR_PAIRS; i++) {
-    pair_content(i, &fg, &bg);
-    if (fg == state_fg && bg == state_bg) {
-      return i;
-    }
-  }
-
-  if (last_color_pair < COLOR_PAIRS) {
-    init_pair(last_color_pair++, state_fg, state_bg);
-    return last_color_pair - 1;
+  if (SOLDIER == 0) {
+    cell_array = (state_num_t *)calloc(sizeof(state_num_t), cell_size + 2);
   } else {
-    return 0;
-  }
-}
-
-static int put_cell(state_num_t state_index) {
-  state *state;
-
-  state = get_state_byindex(state_index);
-
-  if (state == NULL) {
-    return 0;
+    cell_array = (state_num_t *)malloc(sizeof(state_num_t) * (cell_size + 2));
   }
 
-  attron(COLOR_PAIR(state_color[state_index]));
-  printw("%c ", state->name[0]);
-  attroff(COLOR_PAIR(10));
+  if (cell_array == NULL) {
+    return NULL;
+  }
 
-  return SUCCESS;
+  if (SOLDIER != 0) {
+    for (i = 1; i <= cell_size; i++) {
+      cell_array[i] = SOLDIER;
+    }
+  }
+  cell_array[0] = cell_array[cell_size + 1] = EXTERNAL;
+  cell_array[1] = GENERAL;
+
+  return cell_array;
 }
