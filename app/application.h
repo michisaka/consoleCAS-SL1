@@ -3,8 +3,10 @@
 
 #include "cassl1.h"
 
+#define MAX_CELL_SIZE 1000000
+
 typedef struct option {
-  unsigned int max_cell_size;
+  unsigned int cell_size;
   unsigned int interval;
 
   file_property file_property;

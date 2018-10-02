@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   char progname[256];
   int ch;
   int ret;
-  unsigned int max_cell_size = 10;
+  unsigned int cell_size = 10;
   unsigned int interval = 100;
 
   option option;
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   while ((ch = getopt(argc, argv, "hc:i:")) != -1) {
     switch (ch) {
     case 'c':
-      max_cell_size = strtol(optarg, NULL, 0);
+      cell_size = strtol(optarg, NULL, 0);
       break;
     case 'i':
       interval = strtol(optarg, NULL, 0);
@@ -45,8 +45,8 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  if (max_cell_size < 2) {
-    printf("cell_size %d is too short.\n", max_cell_size);
+  if (cell_size < 2) {
+    printf("cell_size %d is too short.\n", cell_size);
     return EXIT_FAILURE;
   }
 
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   }
 
   strcpy(option.file_property.path, basename(argv[0]));
-  option.max_cell_size = max_cell_size;
+  option.cell_size = cell_size;
   option.interval = interval;
 
   switch (2) {
