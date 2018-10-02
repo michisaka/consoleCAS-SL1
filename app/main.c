@@ -16,16 +16,20 @@ int main(int argc, char **argv)
   int ch;
   int ret;
   unsigned int cell_size = 10;
+  unsigned int cell_width = 2;
   unsigned int interval = 100;
 
   option option;
 
   strncpy(progname, basename(argv[0]), sizeof(progname));
 
-  while ((ch = getopt(argc, argv, "hc:i:")) != -1) {
+  while ((ch = getopt(argc, argv, "hc:w:i:")) != -1) {
     switch (ch) {
     case 'c':
       cell_size = strtol(optarg, NULL, 0);
+      break;
+    case 'w':
+      cell_width = strtol(optarg, NULL, 0);
       break;
     case 'i':
       interval = strtol(optarg, NULL, 0);
@@ -50,6 +54,11 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  if (cell_width < 2 || cell_width > 6) {
+    printf("cell_width must be between 2 and 6.\n");
+    return EXIT_FAILURE;
+  }
+
   printf("consoleCAS-SL1 version %d.%02d (%s-%s)\n",
 	 VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
   printf("  Copyright (c) 2018 Koshi.Michisaka\n\n");
@@ -62,6 +71,7 @@ int main(int argc, char **argv)
 
   strcpy(option.file_property.path, basename(argv[0]));
   option.cell_size = cell_size;
+  option.cell_width = cell_width;
   option.interval = interval;
 
   switch (2) {
@@ -83,9 +93,10 @@ static void usage(char *progname)
 {
   fprintf(stderr, "consoleCAS-SL1 version %d.%02d (%s-%s)\n\n",
 	  VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
-  fprintf(stderr, "usage: %s [-h] [-i ms] [-c num] rulefile\n", basename(progname));
+  fprintf(stderr, "usage: %s [-h] [-c num] [-w num] [-i ms] rulefile\n", basename(progname));
   fprintf(stderr, "    -h      show this message\n");
   fprintf(stderr, "    -c num  cell size\n");
+  fprintf(stderr, "    -w num  cell width (2-6)\n");
   fprintf(stderr, "    -i ms   step interval\n\n");
 
   return;

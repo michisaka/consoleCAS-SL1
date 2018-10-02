@@ -1,12 +1,13 @@
 #include <curses.h>
 #include <stdlib.h>
+#include "string.h"
 
 #include "cassl1.h"
 #include "curses-view.h"
 
 static short find_color_index(unsigned char color[]);
 static short find_color_pair(short fg, short bg);
-static int put_cell(state_num_t state_index);
+static int put_cell(state_num_t state_index, int cell_width);
 
 static short *state_color;
 static short last_color_pair = 16;
@@ -15,7 +16,7 @@ static WINDOW *cell_wnd;
 static WINDOW *step_wnd;
 static WINDOW *ruler_wnd;
 
-int create_cell_window(int cell_size)
+int create_cell_window(int cell_size, int cell_width)
 {
   int i;
 
@@ -23,9 +24,9 @@ int create_cell_window(int cell_size)
   if (step_wnd  != NULL) delwin(step_wnd);
   if (ruler_wnd != NULL) delwin(ruler_wnd);
 
-  if ((cell_wnd  = newpad(3 * cell_size + 1, cell_size )) == NULL) return ERR;
+  if ((cell_wnd  = newpad(3 * cell_size + 1, cell_size * cell_width)) == NULL) return ERR;
   if ((step_wnd  = newpad(3 * cell_size + 1, 5 )) == NULL) return ERR;
-  if ((ruler_wnd = newpad(1, cell_size + 10)) == NULL) return ERR;
+  if ((ruler_wnd = newpad(1, cell_size * cell_width + 10)) == NULL) return ERR;
 
   wmove(step_wnd, 0, 4);
   wvline(step_wnd, '|', 3 * cell_size + 1);
@@ -33,7 +34,7 @@ int create_cell_window(int cell_size)
 
   mvwprintw(ruler_wnd, 0, 0, "1");
   for(i = 9; i < cell_size; i += 10) {
-    mvwprintw(ruler_wnd, 0, i, "%d", i + 1);
+    mvwprintw(ruler_wnd, 0, i * cell_width, "%d", i + 1);
   }
 
   return SUCCESS;
@@ -47,16 +48,15 @@ int draw_cell_window(int top, int left)
   return SUCCESS;
 }
 
-int update_cell_window(int step, const state_num_t *cell_array, int cell_size)
+int update_cell_window(int step, const state_num_t *cell_array, int cell_size, int cell_width)
 {
   int i;
   mvwprintw(step_wnd, step, 0, "%4d", step);
   for (i = 1; i <= cell_size; i++) {
-    wmove(cell_wnd, step , i - 1);
-    put_cell(cell_array[i]);
+    wmove(cell_wnd, step , (i - 1) * cell_width);
+    put_cell(cell_array[i], cell_width);
   }
-
- return SUCCESS;
+  return SUCCESS;
 }
 
 void free_cell_window(void)
@@ -137,8 +137,9 @@ static short find_color_pair(short state_fg, short state_bg)
   }
 }
 
-static int put_cell(state_num_t state_index) {
+static int put_cell(state_num_t state_index, int cell_width) {
   state *state;
+  char buf[6];
 
   state = get_state_byindex(state_index);
 
@@ -146,10 +147,12 @@ static int put_cell(state_num_t state_index) {
     return 0;
   }
 
+  strncpy(buf, state->name, cell_width - 1);
+  buf[cell_width - 1] = '\0';
   if (state_color != NULL) {
     wattron(cell_wnd, COLOR_PAIR(state_color[state_index]));
   }
-  wprintw(cell_wnd, "%c", state->name[0]);
+  wprintw(cell_wnd, "%s ", buf);
   wattroff(cell_wnd, COLOR_PAIR(10));
 
   return SUCCESS;

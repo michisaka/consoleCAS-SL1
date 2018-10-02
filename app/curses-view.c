@@ -48,29 +48,32 @@ int start_curses_view(const option *option)
     }
 
     update_cell_count(cell_size);
-    create_cell_window(cell_size);
+    create_cell_window(cell_size, option->cell_width);
     refresh();
 
     ret = SUCCESS;
     for (step = 0; step <= 3 * cell_size; step++) {
       update_step_count(step);
-      update_cell_window(step, cell_array, cell_size);
+      update_cell_window(step, cell_array, cell_size, option->cell_width);
       draw_cell_window(0, 0);
       doupdate();
 
       if (ret == SYNCHRONIZE) {
       	add_sync_count(1);
+	doupdate();
 	usleep(option->interval * 1000);
       	break;
       }
       if (ret == ERR_NOT_SYNCHRONIZE) {
       	add_not_sync_count(1);
 	usleep(option->interval * 1000);
+	doupdate();
       	break;
       }
       if (ret == ERR_UNDEFINED_RULE) {
       	add_undefined_count(1);
 	usleep(option->interval * 1000);
+	doupdate();
       	break;
       }
 

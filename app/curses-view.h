@@ -18,9 +18,9 @@ int update_general_count(const int new_value);
 void free_status_window(void);
 
 int setup_cell_color(state_num_t state_num);
-int create_cell_window(int cell_size);
+int create_cell_window(int cell_size, int cell_width);
 int draw_cell_window(int top, int left);
-int update_cell_window(int step, const state_num_t *cell_array, int cell_size );
+int update_cell_window(int step, const state_num_t *cell_array, int cell_size, int cell_width );
 void free_cell_window(void);
 void free_state_color(void);
 

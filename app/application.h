@@ -7,6 +7,7 @@
 
 typedef struct option {
   unsigned int cell_size;
+  unsigned int cell_width;
   unsigned int interval;
 
   file_property file_property;
