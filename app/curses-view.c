@@ -56,25 +56,23 @@ int start_curses_view(const option *option)
       update_step_count(step);
       update_cell_window(step, cell_array, cell_size, option->cell_width);
       draw_cell_window(0, 0);
-      doupdate();
 
-      if (ret == SYNCHRONIZE) {
+      switch (ret) {
+      case SYNCHRONIZE:
       	add_sync_count(1);
-	doupdate();
-	usleep(option->interval * 1000);
-      	break;
-      }
-      if (ret == ERR_NOT_SYNCHRONIZE) {
+	break;
+      case ERR_NOT_SYNCHRONIZE:
       	add_not_sync_count(1);
-	usleep(option->interval * 1000);
-	doupdate();
-      	break;
-      }
-      if (ret == ERR_UNDEFINED_RULE) {
+	break;
+      case ERR_UNDEFINED_RULE:
       	add_undefined_count(1);
-	usleep(option->interval * 1000);
-	doupdate();
-      	break;
+	break;
+      }
+      doupdate();
+      usleep(option->interval * 1000);
+
+      if (ret != SUCCESS) {
+	break;
       }
 
       key_input = wgetch(stdscr);
@@ -87,10 +85,7 @@ int start_curses_view(const option *option)
       case KEY_F(8):
 	goto end;
       }
-
       ret = change_state(cell_array, cell_size + 2);
-      usleep(option->interval * 1000);
-
     }
   }
 
