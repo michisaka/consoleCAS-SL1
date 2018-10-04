@@ -84,11 +84,27 @@ int start_curses_view(const option *option)
       }
 
       key_input = wgetch(stdscr);
+      flushinp();
       switch (key_input) {
       case KEY_RESIZE:
+	left = 0;
+	top = 0;
 	resize_status_window();
 	draw_status_window(option);
-	draw_cell_window(0, 0);
+	draw_cell_window(top, left);
+	break;
+      case KEY_LEFT:
+	if (left >= option->cell_width) {
+	  left -= option->cell_width;
+	}
+	draw_cell_window(top, left);
+	break;
+      case KEY_RIGHT:
+	if ((int)(cell_size * option->cell_width) -
+	    (left + (COLS - 5)) >= option->cell_width) {
+	  left += option->cell_width;
+	}
+	draw_cell_window(top, left);
 	break;
       case KEY_F(8):
 	goto end;
