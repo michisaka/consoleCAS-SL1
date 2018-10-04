@@ -11,6 +11,7 @@ static state_num_t* allocate_cell_array(size_t cell_size);
 
 int start_curses_view(const option *option)
 {
+  int i;
   int ret;
   int step;
   int cell_size;
@@ -77,37 +78,42 @@ int start_curses_view(const option *option)
 	break;
       }
       doupdate();
-      usleep(option->interval * 1000);
+
+      for (i = 0; i < option->interval; i++) {
+	key_input = wgetch(stdscr);
+	flushinp();
+	switch (key_input) {
+	case KEY_RESIZE:
+	  left = 0;
+	  top = 0;
+	  resize_status_window();
+	  draw_status_window(option);
+	  draw_cell_window(top, left);
+	  doupdate();
+	  break;
+	case KEY_LEFT:
+	  if (left >= option->cell_width) {
+	    left -= option->cell_width;
+	  }
+	  draw_cell_window(top, left);
+	  doupdate();
+	  break;
+	case KEY_RIGHT:
+	  if ((int)(cell_size * option->cell_width) -
+	      (left + (COLS - 5)) >= option->cell_width) {
+	    left += option->cell_width;
+	  }
+	  draw_cell_window(top, left);
+	  doupdate();
+	  break;
+	case KEY_F(8):
+	  goto end;
+	}
+	usleep(1000);
+      }
 
       if (ret != SUCCESS) {
 	break;
-      }
-
-      key_input = wgetch(stdscr);
-      flushinp();
-      switch (key_input) {
-      case KEY_RESIZE:
-	left = 0;
-	top = 0;
-	resize_status_window();
-	draw_status_window(option);
-	draw_cell_window(top, left);
-	break;
-      case KEY_LEFT:
-	if (left >= option->cell_width) {
-	  left -= option->cell_width;
-	}
-	draw_cell_window(top, left);
-	break;
-      case KEY_RIGHT:
-	if ((int)(cell_size * option->cell_width) -
-	    (left + (COLS - 5)) >= option->cell_width) {
-	  left += option->cell_width;
-	}
-	draw_cell_window(top, left);
-	break;
-      case KEY_F(8):
-	goto end;
       }
       ret = change_state(cell_array, cell_size + 2);
     }
