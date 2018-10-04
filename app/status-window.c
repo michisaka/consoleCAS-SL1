@@ -32,18 +32,18 @@ int resize_status_window(void)
 
 int draw_status_window(const option *option)
 {
-  wborder(status_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LTEE, ACS_RTEE);
-  mvwprintw(status_wnd, 0, 2, " consoleCAS-SL1 v.%d.%02d ", VERSION_MAJOR, VERSION_MINOR);
+  box(status_wnd, 0, 0);
+  mvwprintw(status_wnd, 0, 2, " consoleCAS-SL1 v.%d.%02d (%s) ", VERSION_MAJOR, VERSION_MINOR, REVISION);
 
   mvwprintw(fileinfo_wnd, 0, 1,  "FILE:        STATES:       0  RULES:        0");
   mvwprintw(result_wnd, 0, 1,    "SYNC:     0  NOT_SYNC:     0  NOT_FIRE:     0  UNDEFINED:     0");
   mvwprintw(arrayinfo_wnd, 0, 1, "STEP:     0  CELL:         0  GENERAL:      0");
 
   update_fileinfo(option);
-  add_sync_count(-1);
-  add_not_sync_count(-1);
-  add_not_fire_count(-1);
-  add_undefined_count(-1);
+  add_sync_count(0);
+  add_not_sync_count(0);
+  add_not_fire_count(0);
+  add_undefined_count(0);
   update_step_count(-1);
   update_cell_count(-1);
   update_general_count(-1);
@@ -143,8 +143,6 @@ int update_step_count(const int new_value)
 
   if (new_value >= 0) {
     saved_value = new_value;
-  } else if (new_value == -1) {
-    saved_value = 0;
   }
 
   mvwprintw(arrayinfo_wnd, 0, 7, "%5d", saved_value);
@@ -159,8 +157,6 @@ int update_cell_count(const int new_value)
 
   if (new_value >= 0) {
     saved_value = new_value;
-  } else if (new_value == -1) {
-    saved_value = 0;
   }
 
   mvwprintw(arrayinfo_wnd, 0, 24, "%5d", saved_value);
@@ -175,8 +171,6 @@ int update_general_count(const int new_value)
 
   if (new_value >= 0) {
     saved_value = new_value;
-  } else if (new_value == -1) {
-    saved_value = 0;
   }
 
   mvwprintw(arrayinfo_wnd, 0, 41, "%5d", saved_value);
