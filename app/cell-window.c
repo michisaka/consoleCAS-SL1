@@ -42,9 +42,9 @@ int create_cell_window(int cell_size, int cell_width)
 
 int draw_cell_window(int top, int left)
 {
-  pnoutrefresh(step_wnd,  0, 0, 6, 0, LINES - 1, 4);
-  pnoutrefresh(ruler_wnd, 0, 0, 5, 5, 5        , COLS - 1);
-  pnoutrefresh(cell_wnd,  0, 0, 6, 5, LINES - 1, COLS - 1);
+  pnoutrefresh(step_wnd,  top, 0   , 6, 0, LINES - 1, 4);
+  pnoutrefresh(ruler_wnd, 0  , left, 5, 5, 5        , COLS - 1);
+  pnoutrefresh(cell_wnd,  top, left, 6, 5, LINES - 1, COLS - 1);
   return SUCCESS;
 }
 

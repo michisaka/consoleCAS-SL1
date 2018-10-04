@@ -14,6 +14,8 @@ int start_curses_view(const option *option)
   int ret;
   int step;
   int cell_size;
+  int top;
+  int left;
   state_num_t *cell_array;
   short key_input;
 
@@ -51,11 +53,17 @@ int start_curses_view(const option *option)
     create_cell_window(cell_size, option->cell_width);
     refresh();
 
+    top = 0;
+    left = 0;
     ret = SUCCESS;
     for (step = 0; step <= 3 * cell_size; step++) {
       update_step_count(step);
       update_cell_window(step, cell_array, cell_size, option->cell_width);
-      draw_cell_window(0, 0);
+
+      if (step - top == LINES - 6) {
+	top++;
+      }
+      draw_cell_window(top, left);
 
       switch (ret) {
       case SYNCHRONIZE:
