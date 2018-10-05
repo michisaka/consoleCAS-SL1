@@ -106,6 +106,20 @@ int start_curses_view(const option *option)
 	  draw_cell_window(top, left);
 	  doupdate();
 	  break;
+	case KEY_UP:
+	  if (top > 0) {
+	    top -= 1;
+	  }
+	  draw_cell_window(top, left);
+	  doupdate();
+	  break;
+	case KEY_DOWN:
+	  if (step - (top + (LINES - 7)) > 0) {
+	    top += 1;
+	  }
+	  draw_cell_window(top, left);
+	  doupdate();
+	  break;
 	case KEY_F(8):
 	  goto end;
 	}
