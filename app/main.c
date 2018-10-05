@@ -59,6 +59,11 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  if (interval < 1) {
+    printf("minimal interval is 1.\n");
+    return EXIT_FAILURE;
+  }
+
   printf("consoleCAS-SL1 version %d.%02d (%s-%s)\n",
 	 VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
   printf("  Copyright (c) 2018 Koshi.Michisaka\n\n");
