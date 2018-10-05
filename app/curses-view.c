@@ -42,7 +42,7 @@ int start_curses_view(const option *option)
   draw_status_window(option);
 
   cell_array = NULL;
-  for (cell_size = option->cell_size; cell_size <= MAX_CELL_SIZE; cell_size++) {
+  for (cell_size = option->cell_size; cell_size <= option->loop_end; cell_size++) {
     if (cell_array != NULL) {
       free(cell_array);
     }

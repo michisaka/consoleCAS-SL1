@@ -15,7 +15,8 @@ int main(int argc, char **argv)
   char progname[256];
   int ch;
   int ret;
-  unsigned int cell_size = 10;
+  unsigned int cell_size = 0;
+  unsigned int loop_end = 0;
   unsigned int cell_width = 2;
   unsigned int interval = 100;
 
@@ -23,10 +24,17 @@ int main(int argc, char **argv)
 
   strncpy(progname, basename(argv[0]), sizeof(progname));
 
-  while ((ch = getopt(argc, argv, "hc:w:i:")) != -1) {
+  while ((ch = getopt(argc, argv, "hc:l::w:i:")) != -1) {
     switch (ch) {
     case 'c':
       cell_size = strtol(optarg, NULL, 0);
+      break;
+    case 'l':
+      if (optarg == NULL) {
+	loop_end = 1000000;
+      } else {
+	loop_end = strtol(optarg, NULL, 0);
+      }
       break;
     case 'w':
       cell_width = strtol(optarg, NULL, 0);
@@ -49,8 +57,21 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  if (cell_size == 0) {
+    cell_size = loop_end == 0 ? 10 : 2;
+  }
+
+  if (loop_end == 0) {
+    loop_end = cell_size;
+  }
+
   if (cell_size < 2) {
     printf("cell_size %d is too short.\n", cell_size);
+    return EXIT_FAILURE;
+  }
+
+  if (loop_end < cell_size) {
+    printf("loop_end %d is too short.\n", loop_end);
     return EXIT_FAILURE;
   }
 
@@ -76,6 +97,7 @@ int main(int argc, char **argv)
 
   strcpy(option.file_property.path, basename(argv[0]));
   option.cell_size = cell_size;
+  option.loop_end = loop_end;
   option.cell_width = cell_width;
   option.interval = interval;
 
@@ -98,9 +120,10 @@ static void usage(char *progname)
 {
   fprintf(stderr, "consoleCAS-SL1 version %d.%02d (%s-%s)\n\n",
 	  VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
-  fprintf(stderr, "usage: %s [-h] [-c num] [-w num] [-i ms] rulefile\n", basename(progname));
+  fprintf(stderr, "usage: %s [-h] [-c num] [-l[end]] [-w num] [-i ms] rulefile\n", basename(progname));
   fprintf(stderr, "    -h      show this message\n");
   fprintf(stderr, "    -c num  cell size\n");
+  fprintf(stderr, "    -l[end] loop execution\n");
   fprintf(stderr, "    -w num  cell width (2-6)\n");
   fprintf(stderr, "    -i ms   step interval\n\n");
 
