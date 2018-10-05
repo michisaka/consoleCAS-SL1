@@ -20,7 +20,7 @@ int start_simple_view(const option *option)
 	 option->file_property.state_num,
 	 option->file_property.rule_num);
 
-  cell_size = option->max_cell_size + 2;
+  cell_size = option->cell_size + 2;
 
   if (SOLDIER == 0) {
     cell_array = (state_num_t *)calloc(sizeof(state_num_t), cell_size);
