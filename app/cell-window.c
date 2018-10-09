@@ -61,9 +61,9 @@ int update_cell_window(int step, const state_num_t *cell_array, int cell_size, i
 
 void free_cell_window(void)
 {
-  delwin(cell_wnd); cell_wnd = NULL;
-  delwin(step_wnd); step_wnd = NULL;
-  delwin(ruler_wnd); ruler_wnd = NULL;
+  if (cell_wnd != NULL) {delwin(cell_wnd); cell_wnd = NULL;}
+  if (step_wnd != NULL) {delwin(step_wnd); step_wnd = NULL;}
+  if (ruler_wnd != NULL) {delwin(ruler_wnd); ruler_wnd = NULL;}
 }
 
 int setup_cell_color(state_num_t state_num)

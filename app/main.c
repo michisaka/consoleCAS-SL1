@@ -109,6 +109,15 @@ int main(int argc, char **argv)
     ret = start_curses_view(&option);
     break;
   }
+  switch (ret) {
+
+  case ERR_OUT_OF_MEMORY:
+    printf("out of memory\n");
+    break;
+  case ERR_CURSES_ERROR:
+    printf("curses error.\n");
+    break;
+  }
 
   free_states();
   free_ruleset();

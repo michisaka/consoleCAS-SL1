@@ -8,6 +8,7 @@
 #include "version.h"
 
 static state_num_t* allocate_cell_array(size_t cell_size);
+static void cleanup_curses(void);
 
 int start_curses_view(const option *option)
 {
@@ -23,9 +24,13 @@ int start_curses_view(const option *option)
   slk_init(1);
 
   if (initscr() == NULL) {
-    return 0;
+    return ERR_CURSES_ERROR;
   }
-  setup_cell_color(option->file_property.state_num);
+
+  if ((ret = setup_cell_color(option->file_property.state_num)) != SUCCESS) {
+    cleanup_curses();
+    return ret;
+  }
 
   curs_set(0);
   noecho();
@@ -37,7 +42,8 @@ int start_curses_view(const option *option)
   slk_refresh();
 
   if (create_status_window() == ERR) {
-    return 0;
+    cleanup_curses();
+    return ERR_CURSES_ERROR;
   }
   draw_status_window(option);
 
@@ -47,11 +53,16 @@ int start_curses_view(const option *option)
       free(cell_array);
     }
     if ((cell_array = allocate_cell_array(cell_size)) == NULL) {
+      cleanup_curses();
       return ERR_OUT_OF_MEMORY;
     }
 
     update_cell_count(cell_size);
-    create_cell_window(cell_size, option->cell_width);
+    if ((create_cell_window(cell_size, option->cell_width)) != SUCCESS) {
+      cleanup_curses();
+      free(cell_array);
+      return ERR_OUT_OF_MEMORY;
+    }
     refresh();
 
     top = 0;
@@ -86,7 +97,11 @@ int start_curses_view(const option *option)
 	case KEY_RESIZE:
 	  left = 0;
 	  top = 0;
-	  resize_status_window();
+	  if (resize_status_window() == ERR) {
+	    cleanup_curses();
+	    free(cell_array);
+	    return ERR_CURSES_ERROR;
+	  }
 	  draw_status_window(option);
 	  draw_cell_window(top, left);
 	  doupdate();
@@ -121,7 +136,9 @@ int start_curses_view(const option *option)
 	  doupdate();
 	  break;
 	case KEY_F(8):
-	  goto end;
+	  cleanup_curses();
+	  free(cell_array);
+	  return SUCCESS;
 	}
 	usleep(1000);
       }
@@ -133,12 +150,8 @@ int start_curses_view(const option *option)
     }
   }
 
- end: /* シグナル処理の時にまとめる */
-  free_status_window();
-  free_cell_window();
-  free_state_color();
+  cleanup_curses();
   free(cell_array);
-  endwin();
 
   return SUCCESS;
 }
@@ -167,4 +180,13 @@ static state_num_t* allocate_cell_array(size_t cell_size)
   cell_array[1] = GENERAL;
 
   return cell_array;
+}
+
+static void cleanup_curses(void)
+{
+  free_status_window();
+  free_cell_window();
+  free_state_color();
+  endwin();
+  return;
 }

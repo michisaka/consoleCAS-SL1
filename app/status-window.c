@@ -181,8 +181,8 @@ int update_general_count(const int new_value)
 
 void free_status_window(void)
 {
-  delwin(arrayinfo_wnd);
-  delwin(result_wnd);
-  delwin(fileinfo_wnd);
-  delwin(status_wnd);
+  if (arrayinfo_wnd != NULL) {delwin(arrayinfo_wnd); arrayinfo_wnd = NULL;}
+  if (result_wnd != NULL)    {delwin(result_wnd);    result_wnd = NULL;}
+  if (fileinfo_wnd != NULL)  {delwin(fileinfo_wnd);  fileinfo_wnd = NULL;}
+  if (status_wnd != NULL)    {delwin(status_wnd);    status_wnd = NULL;}
 }
