@@ -1,6 +1,7 @@
 #include <curses.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "cassl1.h"
 #include "application.h"
@@ -9,6 +10,7 @@
 
 static state_num_t* allocate_cell_array(size_t cell_size);
 static void cleanup_curses(void);
+static void signal_handler(int sig);
 
 int start_curses_view(const option *option)
 {
@@ -26,6 +28,10 @@ int start_curses_view(const option *option)
   if (initscr() == NULL) {
     return ERR_CURSES_ERROR;
   }
+
+  signal(SIGINT,  signal_handler);
+  signal(SIGTSTP, signal_handler);
+  signal(SIGQUIT, signal_handler);
 
   if ((ret = setup_cell_color(option->file_property.state_num)) != SUCCESS) {
     cleanup_curses();
@@ -189,4 +195,10 @@ static void cleanup_curses(void)
   free_state_color();
   endwin();
   return;
+}
+
+static void signal_handler(int sig)
+{
+  cleanup_curses();
+  exit(EXIT_FAILURE);
 }
