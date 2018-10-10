@@ -5,7 +5,7 @@ execute_process (COMMAND date +%Y%m%d OUTPUT_VARIABLE CMAKE_BUILD_DATE OUTPUT_ST
 execute_process (COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE CMAKE_REVISION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set (VERSION_MAJOR 1)
-set (VERSION_MINOR 0)
+set (VERSION_MINOR 1)
 set (BUILD_DATE ${CMAKE_BUILD_DATE})
 set (REVISION ${CMAKE_REVISION})
 
@@ -14,10 +14,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/version.h.in"
-  "${PROJECT_SOURCE_DIR}/version.h"
+  "${PROJECT_BINARY_DIR}/version.h"
 )
 
-include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_BINARY_DIR})
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/app/waksman.rul"
