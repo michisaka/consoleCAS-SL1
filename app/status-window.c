@@ -5,10 +5,10 @@
 #include "curses-view.h"
 #include "version.h"
 
-WINDOW *status_wnd;
-WINDOW *fileinfo_wnd;
-WINDOW *result_wnd;
-WINDOW *arrayinfo_wnd;
+static WINDOW *status_wnd;
+static WINDOW *fileinfo_wnd;
+static WINDOW *result_wnd;
+static WINDOW *arrayinfo_wnd;
 
 extern pthread_mutex_t curses_lock;
 
