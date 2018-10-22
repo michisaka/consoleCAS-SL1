@@ -67,6 +67,7 @@ int start_curses_view(const option *option)
       if (resize_status_window() == ERR) {
 	pthread_cancel(drawing_thread_id);
 	pthread_join(drawing_thread_id, NULL);
+	pthread_mutex_destroy(&curses_lock);
 	cleanup_curses();
 	return ERR_CURSES_ERROR;
       }
@@ -106,12 +107,15 @@ int start_curses_view(const option *option)
     case KEY_F(8): /* EXIT */
       pthread_cancel(drawing_thread_id);
       pthread_join(drawing_thread_id, NULL);
+      pthread_mutex_destroy(&curses_lock);
       cleanup_curses();
       return SUCCESS;
     }
   }
   pthread_cancel(drawing_thread_id);
   pthread_join(drawing_thread_id, NULL);
+  pthread_mutex_destroy(&curses_lock);
+
   cleanup_curses();
   return 0;
 }
