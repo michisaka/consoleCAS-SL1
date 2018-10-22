@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "cassl1.h"
 #include "application.h"
@@ -18,6 +19,7 @@ typedef struct drawing_param {
 } drawing_param;
 
 pthread_mutex_t curses_lock = PTHREAD_MUTEX_INITIALIZER;
+sem_t keyinput_break_lock;
 
 static int init_curses(void);
 static state_num_t* allocate_cell_array(size_t cell_size);
@@ -51,6 +53,11 @@ int start_curses_view(const option *option)
   }
   draw_status_window(option);
 
+  if (sem_init(&keyinput_break_lock, 0, 0) != 0) {
+    cleanup_curses();
+    return ERR_THREAD_REEOR;
+  }
+
   if (pthread_create(&drawing_thread_id, NULL, drawing_thread, (void*)&param) != 0) {
     cleanup_curses();
     return ERR_THREAD_REEOR;
@@ -68,6 +75,7 @@ int start_curses_view(const option *option)
 	pthread_cancel(drawing_thread_id);
 	pthread_join(drawing_thread_id, NULL);
 	pthread_mutex_destroy(&curses_lock);
+	sem_destroy(&keyinput_break_lock);
 	cleanup_curses();
 	return ERR_CURSES_ERROR;
       }
@@ -108,16 +116,21 @@ int start_curses_view(const option *option)
       pthread_cancel(drawing_thread_id);
       pthread_join(drawing_thread_id, NULL);
       pthread_mutex_destroy(&curses_lock);
+      sem_destroy(&keyinput_break_lock);
       cleanup_curses();
       return SUCCESS;
     }
+    if (sem_trywait(&keyinput_break_lock) == 0) {
+      break;
+    }
   }
   pthread_cancel(drawing_thread_id);
-  pthread_join(drawing_thread_id, NULL);
+  pthread_join(drawing_thread_id, (void **)&ret);
   pthread_mutex_destroy(&curses_lock);
+  sem_destroy(&keyinput_break_lock);
 
   cleanup_curses();
-  return 0;
+  return ret;
 }
 
 static int init_curses(void)
@@ -203,13 +216,13 @@ static void* drawing_thread(void *arg)
       free(cell_array);
     }
     if ((cell_array = allocate_cell_array(param->cell_size)) == NULL) {
-      /* TODO print error message or break key input loop */
+      sem_post(&keyinput_break_lock);
       pthread_exit((void*)ERR_OUT_OF_MEMORY);
     }
 
     update_cell_count(param->cell_size);
     if ((create_cell_window(param->cell_size, option->cell_width)) != SUCCESS) {
-      /* TODO print error message or break key input loop */
+      sem_post(&keyinput_break_lock);
       pthread_exit((void*)ERR_OUT_OF_MEMORY);
     }
     refresh();
