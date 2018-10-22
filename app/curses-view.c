@@ -24,6 +24,7 @@ static state_num_t* allocate_cell_array(size_t cell_size);
 static void cleanup_curses(void);
 static void signal_handler(int sig);
 static void* drawing_thread(void *arg);
+static void drawing_thread_cleanup(void *arg);
 
 int start_curses_view(const option *option)
 {
@@ -64,8 +65,9 @@ int start_curses_view(const option *option)
       param.left = 0;
       param.top = 0;
       if (resize_status_window() == ERR) {
+	pthread_cancel(drawing_thread_id);
+	pthread_join(drawing_thread_id, NULL);
 	cleanup_curses();
-//        free(cell_array);
 	return ERR_CURSES_ERROR;
       }
       draw_status_window(option);
@@ -102,13 +104,15 @@ int start_curses_view(const option *option)
       doupdate();
       break;
     case KEY_F(8): /* EXIT */
+      pthread_cancel(drawing_thread_id);
+      pthread_join(drawing_thread_id, NULL);
       cleanup_curses();
-//      free(cell_array);
       return SUCCESS;
     }
   }
+  pthread_cancel(drawing_thread_id);
+  pthread_join(drawing_thread_id, NULL);
   cleanup_curses();
-//      free(cell_array);
   return 0;
 }
 
@@ -187,6 +191,7 @@ static void* drawing_thread(void *arg)
   param = (drawing_param*)arg;
   option = param->option;
 
+  pthread_cleanup_push(drawing_thread_cleanup, &cell_array);
 
   cell_array = NULL;
   for (param->cell_size = option->cell_size; param->cell_size <= option->loop_end; param->cell_size++) {
@@ -194,14 +199,13 @@ static void* drawing_thread(void *arg)
       free(cell_array);
     }
     if ((cell_array = allocate_cell_array(param->cell_size)) == NULL) {
-      cleanup_curses();
+      /* TODO print error message or break key input loop */
       pthread_exit((void*)ERR_OUT_OF_MEMORY);
     }
 
     update_cell_count(param->cell_size);
     if ((create_cell_window(param->cell_size, option->cell_width)) != SUCCESS) {
-      cleanup_curses();
-      free(cell_array);
+      /* TODO print error message or break key input loop */
       pthread_exit((void*)ERR_OUT_OF_MEMORY);
     }
     refresh();
@@ -231,6 +235,7 @@ static void* drawing_thread(void *arg)
 	break;
       }
       doupdate();
+      pthread_testcancel();
       usleep(1000 * option->interval);
 
       if (ret != SUCCESS) {
@@ -239,6 +244,16 @@ static void* drawing_thread(void *arg)
       ret = change_state(cell_array, param->cell_size + 2);
     }
   }
-  free(cell_array);
+  pthread_cleanup_pop(1);
   return (void*)SUCCESS;
+}
+
+static void drawing_thread_cleanup(void *arg)
+{
+  state_num_t *cell_array;
+
+  cell_array = *(state_num_t **)arg;
+  if (cell_array != NULL) {
+    free(cell_array);
+  }
 }
