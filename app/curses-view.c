@@ -19,7 +19,7 @@ typedef struct drawing_param {
 } drawing_param;
 
 pthread_mutex_t curses_lock = PTHREAD_MUTEX_INITIALIZER;
-sem_t keyinput_break_lock;
+static sem_t keyinput_break_lock;
 
 static int init_curses(void);
 static state_num_t* allocate_cell_array(size_t cell_size);
