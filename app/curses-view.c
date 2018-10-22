@@ -19,6 +19,7 @@ typedef struct drawing_param {
 
 pthread_mutex_t curses_lock = PTHREAD_MUTEX_INITIALIZER;
 
+static int init_curses(void);
 static state_num_t* allocate_cell_array(size_t cell_size);
 static void cleanup_curses(void);
 static void signal_handler(int sig);
@@ -34,29 +35,14 @@ int start_curses_view(const option *option)
 
   param.option = option;
 
-  slk_init(1);
-
-  if (initscr() == NULL) {
-    return ERR_CURSES_ERROR;
+  if ((ret = init_curses()) != SUCCESS) {
+    return ret;
   }
-
-  signal(SIGINT,  signal_handler);
-  signal(SIGTSTP, signal_handler);
-  signal(SIGQUIT, signal_handler);
 
   if ((ret = setup_cell_color(option->file_property.state_num)) != SUCCESS) {
     cleanup_curses();
     return ret;
   }
-
-  curs_set(0);
-  noecho();
-  cbreak();
-  timeout(0);
-  keypad(stdscr, TRUE);
-
-  slk_set(8, "EXIT", 0);
-  slk_refresh();
 
   if (create_status_window() == ERR) {
     cleanup_curses();
@@ -124,6 +110,30 @@ int start_curses_view(const option *option)
   cleanup_curses();
 //      free(cell_array);
   return 0;
+}
+
+static int init_curses(void)
+{
+  slk_init(1);
+
+  if (initscr() == NULL) {
+    return ERR_CURSES_ERROR;
+  }
+
+  signal(SIGINT,  signal_handler);
+  signal(SIGTSTP, signal_handler);
+  signal(SIGQUIT, signal_handler);
+
+  curs_set(0);
+  noecho();
+  cbreak();
+  timeout(0);
+  keypad(stdscr, TRUE);
+
+  slk_set(8, "EXIT", 0);
+  slk_refresh();
+
+  return SUCCESS;
 }
 
 static state_num_t* allocate_cell_array(size_t cell_size)
