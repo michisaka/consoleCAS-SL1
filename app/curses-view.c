@@ -83,7 +83,7 @@ int start_curses_view(const option *option)
       break;
     case KEY_RIGHT:
       if ((int)(param.cell_size * option->cell_width) -
-	  (param.left + (COLS - 5)) >= option->cell_width) {
+	  (param.left + (COLS - 5)) >= (int)option->cell_width) {
 	param.left += option->cell_width;
       }
       draw_cell_window(param.top, param.left);
