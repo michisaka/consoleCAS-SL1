@@ -1,6 +1,7 @@
 #include <curses.h>
 #include <stdlib.h>
-#include "string.h"
+#include <string.h>
+#include <pthread.h>
 
 #include "cassl1.h"
 #include "curses-view.h"
@@ -16,17 +17,30 @@ static WINDOW *cell_wnd;
 static WINDOW *step_wnd;
 static WINDOW *ruler_wnd;
 
+extern pthread_mutex_t curses_lock;
+
 int create_cell_window(int cell_size, int cell_width)
 {
   int i;
+
+  pthread_mutex_lock(&curses_lock);
 
   if (cell_wnd  != NULL) delwin(cell_wnd);
   if (step_wnd  != NULL) delwin(step_wnd);
   if (ruler_wnd != NULL) delwin(ruler_wnd);
 
-  if ((cell_wnd  = newpad(3 * cell_size + 1, cell_size * cell_width)) == NULL) return ERR;
-  if ((step_wnd  = newpad(3 * cell_size + 1, 5 )) == NULL) return ERR;
-  if ((ruler_wnd = newpad(1, cell_size * cell_width + 10)) == NULL) return ERR;
+  if ((cell_wnd  = newpad(3 * cell_size + 1, cell_size * cell_width)) == NULL) {
+    pthread_mutex_unlock(&curses_lock);
+    return ERR;
+  }
+  if ((step_wnd  = newpad(3 * cell_size + 1, 5 )) == NULL) {
+      pthread_mutex_unlock(&curses_lock);
+      return ERR;
+  }
+  if ((ruler_wnd = newpad(1, cell_size * cell_width + 10)) == NULL) {
+      pthread_mutex_unlock(&curses_lock);
+      return ERR;
+  }
 
   wmove(step_wnd, 0, 4);
   wvline(step_wnd, '|', 3 * cell_size + 1);
@@ -37,33 +51,47 @@ int create_cell_window(int cell_size, int cell_width)
     mvwprintw(ruler_wnd, 0, i * cell_width, "%d", i + 1);
   }
 
+  pthread_mutex_unlock(&curses_lock);
   return SUCCESS;
 }
 
 int draw_cell_window(int top, int left)
 {
+  pthread_mutex_lock(&curses_lock);
+
   pnoutrefresh(step_wnd,  top, 0   , 6, 0, LINES - 1, 4);
   pnoutrefresh(ruler_wnd, 0  , left, 5, 5, 5        , COLS - 1);
   pnoutrefresh(cell_wnd,  top, left, 6, 5, LINES - 1, COLS - 1);
+
+  pthread_mutex_unlock(&curses_lock);
   return SUCCESS;
 }
 
 int update_cell_window(int step, const state_num_t *cell_array, int cell_size, int cell_width)
 {
   int i;
+
+  pthread_mutex_lock(&curses_lock);
+
   mvwprintw(step_wnd, step, 0, "%4d", step);
   for (i = 1; i <= cell_size; i++) {
     wmove(cell_wnd, step , (i - 1) * cell_width);
     put_cell(cell_array[i], cell_width);
   }
+
+  pthread_mutex_unlock(&curses_lock);
   return SUCCESS;
 }
 
 void free_cell_window(void)
 {
+  pthread_mutex_lock(&curses_lock);
+
   if (cell_wnd != NULL) {delwin(cell_wnd); cell_wnd = NULL;}
   if (step_wnd != NULL) {delwin(step_wnd); step_wnd = NULL;}
   if (ruler_wnd != NULL) {delwin(ruler_wnd); ruler_wnd = NULL;}
+
+  pthread_mutex_unlock(&curses_lock);
 }
 
 int setup_cell_color(state_num_t state_num)
