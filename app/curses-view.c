@@ -81,14 +81,18 @@ int start_curses_view(const option *option)
       }
       draw_status_window(option);
       draw_cell_window(param.top, param.left);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
+      pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_LEFT:
       if (param.left >= option->cell_width) {
 	param.left -= option->cell_width;
       }
       draw_cell_window(param.top, param.left);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
+      pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_RIGHT:
       if ((int)(param.cell_size * option->cell_width) -
@@ -96,21 +100,27 @@ int start_curses_view(const option *option)
 	param.left += option->cell_width;
       }
       draw_cell_window(param.top, param.left);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
+      pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_UP:
       if (param.top > 0) {
 	param.top -= 1;
       }
       draw_cell_window(param.top, param.left);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
+      pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_DOWN:
       if (param.step - (param.top + (LINES - 7)) > 0) {
 	param.top += 1;
       }
       draw_cell_window(param.top, param.left);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
+      pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_F(8): /* EXIT */
       pthread_cancel(drawing_thread_id);
@@ -123,6 +133,7 @@ int start_curses_view(const option *option)
     if (sem_trywait(&keyinput_break_lock) == 0) {
       break;
     }
+    pthread_yield();
   }
   pthread_cancel(drawing_thread_id);
   pthread_join(drawing_thread_id, (void **)&ret);
@@ -251,7 +262,9 @@ static void* drawing_thread(void *arg)
       	add_undefined_count(1);
 	break;
       }
+    pthread_mutex_lock(&curses_lock);
       doupdate();
+    pthread_mutex_unlock(&curses_lock);
       pthread_testcancel();
       usleep(1000 * option->interval);
 
