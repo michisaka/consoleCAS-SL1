@@ -262,9 +262,9 @@ static void* drawing_thread(void *arg)
       	add_undefined_count(1);
 	break;
       }
-    pthread_mutex_lock(&curses_lock);
+      pthread_mutex_lock(&curses_lock);
       doupdate();
-    pthread_mutex_unlock(&curses_lock);
+      pthread_mutex_unlock(&curses_lock);
       pthread_testcancel();
       usleep(1000 * option->interval);
 
