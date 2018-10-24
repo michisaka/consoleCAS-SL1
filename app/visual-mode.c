@@ -27,7 +27,7 @@ int visual_mode_main(const option *option)
   int ret;
   short key_input;
 
-  pthread_t drawing_thread_id;
+  pthread_t thread_id;
   visual_mode_param param;
 
   param.option = option;
@@ -52,7 +52,7 @@ int visual_mode_main(const option *option)
     return ERR_THREAD_REEOR;
   }
 
-  if (pthread_create(&drawing_thread_id, NULL, visual_mode_thread, (void*)&param) != 0) {
+  if (pthread_create(&thread_id, NULL, visual_mode_thread, (void*)&param) != 0) {
     cleanup_curses();
     return ERR_THREAD_REEOR;
   }
@@ -66,8 +66,8 @@ int visual_mode_main(const option *option)
       param.left = 0;
       param.top = 0;
       if (resize_status_window() == ERR) {
-	pthread_cancel(drawing_thread_id);
-	pthread_join(drawing_thread_id, NULL);
+	pthread_cancel(thread_id);
+	pthread_join(thread_id, NULL);
 	pthread_mutex_destroy(&curses_lock);
 	sem_destroy(&keyinput_break_lock);
 	cleanup_curses();
@@ -117,8 +117,8 @@ int visual_mode_main(const option *option)
       pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_F(8): /* EXIT */
-      pthread_cancel(drawing_thread_id);
-      pthread_join(drawing_thread_id, NULL);
+      pthread_cancel(thread_id);
+      pthread_join(thread_id, NULL);
       pthread_mutex_destroy(&curses_lock);
       sem_destroy(&keyinput_break_lock);
       cleanup_curses();
@@ -129,8 +129,8 @@ int visual_mode_main(const option *option)
     }
     pthread_yield();
   }
-  pthread_cancel(drawing_thread_id);
-  pthread_join(drawing_thread_id, (void **)&ret);
+  pthread_cancel(thread_id);
+  pthread_join(thread_id, (void **)&ret);
   pthread_mutex_destroy(&curses_lock);
   sem_destroy(&keyinput_break_lock);
 
