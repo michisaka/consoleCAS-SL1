@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     ret = start_simple_view(&option);
     break;
   case 2:
-    ret = start_curses_view(&option);
+    ret = visual_mode_main(&option);
     break;
   }
   switch (ret) {

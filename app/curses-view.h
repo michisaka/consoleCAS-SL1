@@ -4,6 +4,11 @@
 #include "cassl1.h"
 #include "application.h"
 
+int init_curses(void);
+state_num_t* allocate_cell_array(size_t cell_size);
+void cleanup_curses(void);
+void signal_handler(int sig);
+
 int create_status_window(void);
 int resize_status_window(void);
 int draw_status_window(const option *option);
