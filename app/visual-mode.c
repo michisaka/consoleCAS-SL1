@@ -203,6 +203,12 @@ static void* visual_mode_thread(void *arg)
       }
       ret = change_state(cell_array, param->cell_size + 2);
     }
+    if (param->step > 3 * param->cell_size) {
+      add_not_fire_count(1);
+      pthread_mutex_lock(&curses_lock);
+      doupdate();
+      pthread_mutex_unlock(&curses_lock);
+    }
   }
   pthread_cleanup_pop(1);
   return (void*)SUCCESS;
