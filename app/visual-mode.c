@@ -117,6 +117,7 @@ int visual_mode_main(const option *option)
       pthread_mutex_unlock(&curses_lock);
       break;
     case KEY_F(8): /* EXIT */
+    case 'q':
       pthread_cancel(thread_id);
       pthread_join(thread_id, NULL);
       pthread_mutex_destroy(&curses_lock);
