@@ -215,4 +215,5 @@ static void visual_mode_thread_cleanup(void *arg)
   if (cell_array != NULL) {
     free(cell_array);
   }
+  pthread_mutex_unlock(&curses_lock);
 }
