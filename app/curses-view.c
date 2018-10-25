@@ -64,6 +64,7 @@ void cleanup_curses(void)
 {
   free_status_window();
   free_cell_window();
+  free_bulklog_window();
   free_state_color();
   endwin();
   return;

@@ -101,16 +101,19 @@ int main(int argc, char **argv)
   option.cell_width = cell_width;
   option.interval = interval;
 
-  switch (2) {
+  switch (3) {
   case 1:
     ret = start_simple_view(&option);
     break;
   case 2:
     ret = visual_mode_main(&option);
     break;
+  case 3:
+    ret = bulk_mode_main(&option);
+    break;
   }
-  switch (ret) {
 
+  switch (ret) {
   case ERR_OUT_OF_MEMORY:
     printf("out of memory\n");
     break;
