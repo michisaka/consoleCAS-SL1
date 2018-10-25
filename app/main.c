@@ -15,6 +15,7 @@ int main(int argc, char **argv)
   char progname[256];
   int ch;
   int ret;
+  char mode = 'v';
   unsigned int cell_size = 0;
   unsigned int loop_end = 0;
   unsigned int cell_width = 2;
@@ -24,8 +25,16 @@ int main(int argc, char **argv)
 
   strncpy(progname, basename(argv[0]), sizeof(progname));
 
-  while ((ch = getopt(argc, argv, "hc:l::w:i:")) != -1) {
+  while ((ch = getopt(argc, argv, "hm:c:l::w:i:")) != -1) {
     switch (ch) {
+    case 'm':
+      mode = optarg[0];
+      if (mode != 's' && mode != 'v' && mode != 'b') {
+	printf("%s: unknown mode -- m%c\n", progname, mode);
+	usage(progname);
+	return EXIT_FAILURE;
+      }
+      break;
     case 'c':
       cell_size = strtol(optarg, NULL, 0);
       break;
@@ -101,14 +110,14 @@ int main(int argc, char **argv)
   option.cell_width = cell_width;
   option.interval = interval;
 
-  switch (3) {
-  case 1:
+  switch (mode) {
+  case 's':
     ret = start_simple_view(&option);
     break;
-  case 2:
+  case 'v':
     ret = visual_mode_main(&option);
     break;
-  case 3:
+  case 'b':
     ret = bulk_mode_main(&option);
     break;
   }
@@ -132,8 +141,10 @@ static void usage(char *progname)
 {
   fprintf(stderr, "consoleCAS-SL1 version %d.%02d (%s-%s)\n\n",
 	  VERSION_MAJOR, VERSION_MINOR, REVISION, BUILD_DATE);
-  fprintf(stderr, "usage: %s [-h] [-c num] [-l[end]] [-w num] [-i ms] rulefile\n", basename(progname));
+  fprintf(stderr, "usage: %s [-h] [-m(v|b)] [-c num] [-l[end]] [-w num] [-i ms] rulefile\n", basename(progname));
   fprintf(stderr, "    -h      show this message\n");
+  fprintf(stderr, "    -mv     visual mode\n");
+  fprintf(stderr, "    -mb     bulk mode\n");
   fprintf(stderr, "    -c num  cell size\n");
   fprintf(stderr, "    -l[end] loop execution\n");
   fprintf(stderr, "    -w num  cell width (2-6)\n");
