@@ -39,7 +39,7 @@ int bulk_mode_main(const option *option)
   localtime_r(&start, &tm_buf);
   strftime(msg, sizeof(msg), "Bulk mode start on %c.", &tm_buf);
   add_bulklog_message(msg);
-  add_bulklog_message("Step counter will be displayed at CELL >= 10000.\n");
+  add_bulklog_message("STEP is displayed with CELL >= 10000.\n");
 
   if (sem_init(&keyinput_break_lock, 0, 0) != 0) {
     cleanup_curses();
