@@ -48,7 +48,7 @@ typedef struct file_property {
 #define ERR_NOT_SYNCHRONIZE         -14
 #define ERR_UNKNOWN_FORMAT          -15
 #define ERR_CURSES_ERROR            -16
-#define ERR_THREAD_REEOR            -17
+#define ERR_THREAD_ERROR            -17
 
 /* liblary capability flags */
 #define RULECAP_ALLOCATE_BY_STATENUM 0x1

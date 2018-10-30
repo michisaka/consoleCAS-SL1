@@ -43,12 +43,12 @@ int bulk_mode_main(const option *option)
 
   if (sem_init(&keyinput_break_lock, 0, 0) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   if (pthread_create(&thread_id, NULL, bulk_mode_thread, (void*)option) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   while (1) {
