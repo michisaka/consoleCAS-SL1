@@ -14,7 +14,8 @@ typedef struct option {
 } option;
 
 int start_simple_view(const option *option);
-int start_curses_view(const option *option);
+int visual_mode_main(const option *option);
+int bulk_mode_main(const option *option);
 
 
 #endif /* APPLICATION_H_INCLUDED */
