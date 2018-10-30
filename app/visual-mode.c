@@ -201,7 +201,7 @@ static void* visual_mode_thread(void *arg)
       if (ret != SUCCESS) {
 	break;
       }
-      ret = change_state(cell_array, param->cell_size + 2);
+      ret = translate_array(cell_array, param->cell_size + 2);
     }
     if (param->step > 3 * param->cell_size) {
       add_not_fire_count(1);

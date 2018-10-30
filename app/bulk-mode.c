@@ -159,7 +159,7 @@ static void* bulk_mode_thread(void *arg)
       if (ret != SUCCESS) {
 	break;
       }
-      ret = change_state(cell_array, cell_size + 2);
+      ret = translate_array(cell_array, cell_size + 2);
     }
     if (step > 3 * cell_size) {
       add_not_fire_count(1);

@@ -70,7 +70,7 @@ state_num_t get_next_state(state_num_t l_index, state_num_t c_index, state_num_t
 void free_ruleset(void);
 
 /* cell */
-int change_state(state_num_t *cells, size_t size);
+int translate_array(state_num_t *cell_array, size_t size);
 
 /* rulefile */
 int load_rulefile(const char *path, file_property *property);

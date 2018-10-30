@@ -101,13 +101,13 @@ TEST(CASTest, cell_test)
   for (i = 0; i < 9; i++) {
     switch (i) {
     case 7:
-      EXPECT_EQ(SYNCHRONIZE, change_state(cells, 7));
+      EXPECT_EQ(SYNCHRONIZE, translate_array(cells, 7));
       break;
     case 8:
-      EXPECT_EQ(ERR_UNDEFINED_RULE, change_state(cells, 7));
+      EXPECT_EQ(ERR_UNDEFINED_RULE, translate_array(cells, 7));
       break;
     default:
-      EXPECT_EQ(SUCCESS, change_state(cells, 7));
+      EXPECT_EQ(SUCCESS, translate_array(cells, 7));
       break;
     }
   }
@@ -128,13 +128,13 @@ TEST(CASTest, rulefile_test)
   for (i = 0; i < 9; i++) {
     switch (i) {
     case 7:
-      EXPECT_EQ(SYNCHRONIZE, change_state(cells, 7));
+      EXPECT_EQ(SYNCHRONIZE, translate_array(cells, 7));
       break;
     case 8:
-      EXPECT_EQ(ERR_UNDEFINED_RULE, change_state(cells, 7));
+      EXPECT_EQ(ERR_UNDEFINED_RULE, translate_array(cells, 7));
       break;
     default:
-      EXPECT_EQ(SUCCESS, change_state(cells, 7));
+      EXPECT_EQ(SUCCESS, translate_array(cells, 7));
       break;
     }
   }
