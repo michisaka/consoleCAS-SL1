@@ -48,7 +48,7 @@ typedef struct file_property {
 #define ERR_NOT_SYNCHRONIZE         -14
 #define ERR_UNKNOWN_FORMAT          -15
 #define ERR_CURSES_ERROR            -16
-#define ERR_THREAD_REEOR            -17
+#define ERR_THREAD_ERROR            -17
 
 /* liblary capability flags */
 #define RULECAP_ALLOCATE_BY_STATENUM 0x1
@@ -70,7 +70,7 @@ state_num_t get_next_state(state_num_t l_index, state_num_t c_index, state_num_t
 void free_ruleset(void);
 
 /* cell */
-int change_state(state_num_t *cells, size_t size);
+int translate_array(state_num_t *cell_array, size_t size);
 
 /* rulefile */
 int load_rulefile(const char *path, file_property *property);

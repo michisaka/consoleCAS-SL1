@@ -49,12 +49,12 @@ int visual_mode_main(const option *option)
 
   if (sem_init(&keyinput_break_lock, 0, 0) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   if (pthread_create(&thread_id, NULL, visual_mode_thread, (void*)&param) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   while (1) {
@@ -201,7 +201,7 @@ static void* visual_mode_thread(void *arg)
       if (ret != SUCCESS) {
 	break;
       }
-      ret = change_state(cell_array, param->cell_size + 2);
+      ret = translate_array(cell_array, param->cell_size + 2);
     }
     if (param->step > 3 * param->cell_size) {
       add_not_fire_count(1);

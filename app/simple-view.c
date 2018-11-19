@@ -44,7 +44,7 @@ int start_simple_view(const option *option)
     if (option->interval > 0) {
       usleep(option->interval * 1000);
     }
-    ret =change_state(cell_array, cell_size);
+    ret = translate_array(cell_array, cell_size);
     print_array(cell_array, cell_size);
     if (ret != SUCCESS) {
       break;

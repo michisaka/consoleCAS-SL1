@@ -43,12 +43,12 @@ int bulk_mode_main(const option *option)
 
   if (sem_init(&keyinput_break_lock, 0, 0) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   if (pthread_create(&thread_id, NULL, bulk_mode_thread, (void*)option) != 0) {
     cleanup_curses();
-    return ERR_THREAD_REEOR;
+    return ERR_THREAD_ERROR;
   }
 
   while (1) {
@@ -159,7 +159,7 @@ static void* bulk_mode_thread(void *arg)
       if (ret != SUCCESS) {
 	break;
       }
-      ret = change_state(cell_array, cell_size + 2);
+      ret = translate_array(cell_array, cell_size + 2);
     }
     if (step > 3 * cell_size) {
       add_not_fire_count(1);
