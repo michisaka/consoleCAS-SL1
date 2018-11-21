@@ -50,7 +50,7 @@ void add_bulklog_result(int cell, int gpos, char *msg)
 {
   pthread_mutex_lock(&curses_lock);
 
-  wprintw(bulklog_wnd, "CELL %4d, GPOS, %4d %s\n", cell, gpos,  msg);
+  wprintw(bulklog_wnd, "CELL: %4d, GPOS: %4d   %s\n", cell, gpos,  msg);
   wnoutrefresh(bulklog_wnd);
 
   pthread_mutex_unlock(&curses_lock);
